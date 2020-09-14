@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net;
 using System.Globalization;
+using System.Windows.Threading;
 
 namespace Chat
 {
@@ -28,6 +29,20 @@ namespace Chat
         public NewChat(bool isHost, string Ip = null)
         {
             InitializeComponent();
+
+            var timer = new DispatcherTimer();
+            timer.Interval = new TimeSpan(0, 0, 2);
+            timer.Tick += ((sender, e) => 
+            {
+                ChatBox.Height += 10;
+
+                if (scrollViewer.VerticalOffset == scrollViewer.ScrollableHeight)
+                {
+                    scrollViewer.ScrollToEnd();
+                }
+
+            });
+            timer.Start();
 
             if (isHost)
             {
@@ -84,7 +99,7 @@ namespace Chat
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Parse(Ip), 8005));
                     ChatBox.Text += $"Your are connected to: {Ip}";
-                
+
                     Task.Factory.StartNew(() =>
                     {
                         while (true)

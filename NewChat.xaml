@@ -22,8 +22,8 @@
             </ScrollViewer>
         </Border>
 
-        <TextBox Name="BoxForMessage" Grid.Row="1" Grid.Column="0" Margin="5" Text="Message..." GotFocus="BoxForMessage_GotFocus"/>
-        <Button Click="SendButton" ToolTip="Or press &quot;Enter&quot; to send a message&#x0a;Coming soon" Grid.Row="1" Grid.Column="1" Margin="5" Content="Send"/>
+        <TextBox KeyDown="BoxForMessage_KeyDown" Name="BoxForMessage" Grid.Row="1" Grid.Column="0" Margin="5" Text="Message..." GotFocus="BoxForMessage_GotFocus"/>
+        <Button Name="sendButton" Click="SendButton" Grid.Row="1" Grid.Column="1" Margin="5" Content="Send"/>
 
     </Grid>
 </Window>

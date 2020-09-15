@@ -55,5 +55,13 @@ namespace Chat
             textBox.Text = "";
             textBox.GotFocus -= IpBox_GotFocus;
         }
+
+        private void IpBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) 
+            {
+                connectButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+        }
     }
 }

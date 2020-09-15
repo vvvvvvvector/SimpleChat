@@ -158,5 +158,13 @@ namespace Chat
             textBox.Text = "";
             textBox.GotFocus -= BoxForMessage_GotFocus;
         }
+
+        private void BoxForMessage_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) 
+            {
+                sendButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+        }
     }
 }

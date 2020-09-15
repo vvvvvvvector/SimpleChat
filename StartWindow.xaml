@@ -14,8 +14,8 @@
         </Grid.RowDefinitions>
 
         <WrapPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBox Name="IpBox" Text="Write host IP right here:>" Margin="3" Width="220" GotFocus="IpBox_GotFocus"/>
-            <Button Click="ConnectButton" Content="Connect" Margin="3"/>
+            <TextBox KeyDown="IpBox_KeyDown" Name="IpBox" Text="Write host IP right here:>" Margin="3" Width="220" GotFocus="IpBox_GotFocus"/>
+            <Button Name="connectButton" Click="ConnectButton" Content="Connect" Margin="3"/>
         </WrapPanel>
 
         <Button Click="HostButton" Grid.Row="1" Content="I'll be host" Margin="5"/>

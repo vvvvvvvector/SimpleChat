@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chat"
         mc:Ignorable="d"
-        Title="StartWindow" Height="200" Width="350" WindowStartupLocation="CenterScreen">
+        Title="Menu" Height="200" Width="350" WindowStartupLocation="CenterScreen">
     <Grid Margin="5">
 
         <Grid.RowDefinitions>

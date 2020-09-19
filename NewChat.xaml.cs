@@ -18,7 +18,8 @@ namespace Chat
     {
         string nickname;
         bool _isHost;
-        Socket socket;
+
+        Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         List<Socket> clients = new List<Socket>();
         public NewChat(bool isHost, string name, string Ip = null)
         {
@@ -41,9 +42,8 @@ namespace Chat
             if (isHost)
             {
                 _isHost = true;
-                nickname = name;
+                nickname = $"{name}(Host)";
 
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.Bind(new IPEndPoint(IPAddress.Any, 8005));
                 socket.Listen(0);
 
@@ -55,8 +55,6 @@ namespace Chat
             {
                 _isHost = false;
                 nickname = name;
-
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 try
                 {
@@ -72,11 +70,6 @@ namespace Chat
                                 var buffer = new byte[256];
                                 var receivedData = socket.Receive(buffer, 0, buffer.Length, 0);
 
-                                if (receivedData <= 0)
-                                {
-                                    throw new SocketException();
-                                }
-
                                 Array.Resize(ref buffer, receivedData);
 
                                 Dispatcher.Invoke(() =>
@@ -84,16 +77,17 @@ namespace Chat
                                     ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} {Encoding.Default.GetString(buffer)}";
                                 });
                             }
-                            catch (Exception ex)
+                            catch(Exception ex)
                             {
                                 MessageBox.Show(ex.Message);
                             }
                         }
                     });
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     MessageBox.Show(ex.Message);
+                    socket.Shutdown(SocketShutdown.Both);
                     socket.Close();
                     Application.Current.Shutdown();
                 }
@@ -139,11 +133,6 @@ namespace Chat
                         var buffer = new byte[256];
                         var receivedData = acceptedClient.Receive(buffer, 0, buffer.Length, 0);
 
-                        if (receivedData <= 0)
-                        {
-                            throw new SocketException();
-                        }
-
                         Array.Resize(ref buffer, receivedData);
 
                         Dispatcher.Invoke(() =>
@@ -151,7 +140,7 @@ namespace Chat
                             ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} {Encoding.Default.GetString(buffer)}";
                         });
 
-                        // Send to other clients here
+                        // Send message to other clients here
 
                         foreach (var client in clients)
                         {

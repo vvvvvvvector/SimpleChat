@@ -5,20 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chat"
         mc:Ignorable="d"
-        Title="StartWindow" Height="150" Width="300" WindowStartupLocation="CenterScreen">
-    <Grid>
+        Title="StartWindow" Height="200" Width="350" WindowStartupLocation="CenterScreen">
+    <Grid Margin="5">
 
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
 
-        <WrapPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBox KeyDown="IpBox_KeyDown" Name="IpBox" Text="Write host IP right here:>" Margin="3" Width="220" GotFocus="IpBox_GotFocus"/>
-            <Button Name="connectButton" Click="ConnectButton" Content="Connect" Margin="3"/>
-        </WrapPanel>
+        <StackPanel VerticalAlignment="Center">
 
-        <Button Click="HostButton" Grid.Row="1" Content="I'll be host" Margin="5"/>
+            <UniformGrid Margin="3" Columns="3">
+                <TextBlock Text="Name"/>
+                <TextBlock Text="IP"/>
+            </UniformGrid>
+
+            <UniformGrid Columns="3">
+                <TextBox Name="NameBox" Margin="3"/>
+                <TextBox
+                KeyDown="IpBox_KeyDown"
+                Name="IpBox" 
+                Text="Host IP here:>" 
+                Margin="3" GotFocus="IpBox_GotFocus"/>
+                <Button 
+                Name="connectButton"
+                Click="ConnectButton" Content="Connect" Margin="3"/>
+            </UniformGrid>
+
+        </StackPanel>
+
+        <Button 
+            Click="HostButton" 
+            Grid.Row="1" Content="I'll be host" Margin="3"/>
 
     </Grid>
 </Window>

@@ -31,7 +31,7 @@ namespace Chat
         {
             if (Regex.IsMatch(IpBox.Text, @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"))
             {
-                var clientWindow = new NewChat(false, IpBox.Text);
+                var clientWindow = new NewChat(false, NameBox.Text, IpBox.Text);
                 //this.Visibility = Visibility.Hidden;
                 //this.Hide();
                 clientWindow.ShowDialog();
@@ -44,7 +44,7 @@ namespace Chat
 
         private void HostButton(object sender, RoutedEventArgs e)
         {
-            var hostWindow = new NewChat(true);
+            var hostWindow = new NewChat(true, NameBox.Text);
             //this.Hide();
             hostWindow.ShowDialog();
         }

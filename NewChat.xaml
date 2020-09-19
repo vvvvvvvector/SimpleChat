@@ -16,14 +16,26 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        
         <Border Grid.Row="0" Grid.ColumnSpan="2" Margin="5" BorderThickness="1" BorderBrush="Black">
             <ScrollViewer Name="scrollViewer" VerticalScrollBarVisibility="Auto">
                 <TextBlock Name="ChatBox"/>
             </ScrollViewer>
         </Border>
 
-        <TextBox KeyDown="BoxForMessage_KeyDown" Name="BoxForMessage" Grid.Row="1" Grid.Column="0" Margin="5" Text="Message..." GotFocus="BoxForMessage_GotFocus"/>
-        <Button Name="sendButton" Click="SendButton" Grid.Row="1" Grid.Column="1" Margin="5" Content="Send"/>
+        <TextBox
+            KeyDown="BoxForMessage_KeyDown" 
+            Name="BoxForMessage"
+            Grid.Row="1" 
+            Grid.Column="0" 
+            Margin="5"
+            Text="Message..." 
+            GotFocus="BoxForMessage_GotFocus"/>
+        <Button 
+            Name="sendButton"
+            Click="SendButton"
+            Grid.Row="1" 
+            Grid.Column="1" Margin="5" Content="Send"/>
 
     </Grid>
 </Window>

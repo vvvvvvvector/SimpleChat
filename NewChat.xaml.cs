@@ -3,17 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Net;
-using System.Globalization;
 using System.Windows.Threading;
 
 namespace Chat
@@ -23,16 +16,17 @@ namespace Chat
     /// </summary>
     public partial class NewChat : Window
     {
-        Socket accept;
-        Socket socket;
+        string nickname;
         bool _isHost;
-        public NewChat(bool isHost, string Ip = null)
+        Socket socket;
+        List<Socket> clients = new List<Socket>();
+        public NewChat(bool isHost, string name, string Ip = null)
         {
             InitializeComponent();
 
             var timer = new DispatcherTimer();
             timer.Interval = new TimeSpan(0, 0, 2);
-            timer.Tick += ((sender, e) => 
+            timer.Tick += ((sender, e) =>
             {
                 ChatBox.Height += 10;
 
@@ -47,58 +41,27 @@ namespace Chat
             if (isHost)
             {
                 _isHost = true;
+                nickname = name;
+
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.Bind(new IPEndPoint(IPAddress.Any, 8005));
                 socket.Listen(0);
+
                 ChatBox.Text = "Server Started...\nWaiting for incoming client connections...";
 
-                Task.Factory.StartNew(() =>
-                {
-                    accept = socket.Accept();
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        ChatBox.Text += "\nConnection accepted!";
-                    });
-
-                    while (true)
-                    {
-                        try
-                        {
-                            var buffer = new byte[256];
-                            var receivedData = accept.Receive(buffer, 0, buffer.Length, 0);
-
-                            if (receivedData <= 0)
-                            {
-                                throw new SocketException();
-                            }
-
-                            Array.Resize(ref buffer, receivedData);
-
-                            Dispatcher.Invoke(() =>
-                            {
-                                ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} Client: {Encoding.Default.GetString(buffer)}";
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                            socket.Shutdown(SocketShutdown.Both);
-                            socket.Close();
-                            Application.Current.Shutdown();
-                        }
-                    }
-                });
-
+                socket.BeginAccept(AcceptCallBack, null); 
             }
             else
             {
                 _isHost = false;
+                nickname = name;
+
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
                 try
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Parse(Ip), 8005));
-                    ChatBox.Text += $"Your are connected to: {Ip}";
+                    ChatBox.Text += $"Welcome to the chat room {nickname}!";
 
                     Task.Factory.StartNew(() =>
                     {
@@ -118,7 +81,7 @@ namespace Chat
 
                                 Dispatcher.Invoke(() =>
                                 {
-                                    ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} Host: {Encoding.Default.GetString(buffer)}";
+                                    ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} {Encoding.Default.GetString(buffer)}";
                                 });
                             }
                             catch (Exception ex)
@@ -139,17 +102,75 @@ namespace Chat
 
         void SendButton(object sender, RoutedEventArgs e)
         {
-            var dataToSend = Encoding.Default.GetBytes(BoxForMessage.Text);
+            var dataToSend = Encoding.Default.GetBytes($"{nickname}: {BoxForMessage.Text}");
             if (_isHost)
             {
-                accept.Send(dataToSend, 0, dataToSend.Length, 0);
-                ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} Host: {BoxForMessage.Text}";
+                foreach (var client in clients)
+                {
+                    client.Send(dataToSend, 0, dataToSend.Length, 0);
+                }
+                ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} {nickname}: {BoxForMessage.Text}";
+                BoxForMessage.Text = "";
             }
             else
             {
                 socket.Send(dataToSend, 0, dataToSend.Length, 0);
-                ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} Client: {BoxForMessage.Text}";
+                ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} {nickname}: {BoxForMessage.Text}";
+                BoxForMessage.Text = "";
             }
+        }
+
+        void AcceptCallBack(IAsyncResult asyncResult)
+        {
+            var acceptedClient = socket.EndAccept(asyncResult);
+            clients.Add(acceptedClient);
+
+            Task.Factory.StartNew(() =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ChatBox.Text += "\nNew connection accepted!";
+                });
+
+                while (true)
+                {
+                    try
+                    {
+                        var buffer = new byte[256];
+                        var receivedData = acceptedClient.Receive(buffer, 0, buffer.Length, 0);
+
+                        if (receivedData <= 0)
+                        {
+                            throw new SocketException();
+                        }
+
+                        Array.Resize(ref buffer, receivedData);
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            ChatBox.Text += $"\n{DateTime.Now.ToShortTimeString()} {Encoding.Default.GetString(buffer)}";
+                        });
+
+                        // Send to other clients here
+
+                        foreach (var client in clients)
+                        {
+                            if (client != acceptedClient)
+                            {
+                                client.Send(buffer, 0, buffer.Length, 0);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        socket.Shutdown(SocketShutdown.Both);
+                        socket.Close();
+                        Application.Current.Shutdown();
+                    }
+                }
+            });
+            socket.BeginAccept(AcceptCallBack, null);
         }
 
         void BoxForMessage_GotFocus(object sender, RoutedEventArgs e)
@@ -161,7 +182,7 @@ namespace Chat
 
         private void BoxForMessage_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter) 
+            if (e.Key == Key.Enter)
             {
                 sendButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
